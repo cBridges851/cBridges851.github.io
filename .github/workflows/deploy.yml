@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '8.0'
 
       - name: Publish
-        run: dotnet pubish MyCorner -c Release
+        run: dotnet publish MyCorner -c Release
 
       - name: Verify index.html exists
         run: |
