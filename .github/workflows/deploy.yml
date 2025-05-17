@@ -26,15 +26,15 @@ jobs:
       - name: Publish
         run: dotnet publish MyCorner -c Release
 
+      - name: List output files
+        run: ls -alhR ${{ env.PUBLISH_DIR }}
+
       - name: Verify index.html exists
         run: |
             if [ ! -f "${{ env.PUBLISH_DIR }}/index.html" ]; then
               echo "index.html not found! Failing."
               exit 1
             fi
-
-      - name: List output files
-        run: ls -alhR ${{ env.PUBLISH_DIR }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5.0.0  
