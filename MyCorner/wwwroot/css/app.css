@@ -101,3 +101,24 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+.output-container {
+    overflow-y: auto;
+    border: 1px solid black;
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-container {
+    width: 100%;
+    display: flex;
+}
+
+.input-container [type=text] {
+    width: 80%;
+}
+
+.input-container [type=submit] {
+    width: 20%;
+}

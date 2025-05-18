@@ -1,0 +1,37 @@
+@inject IJSRuntime js;
+
+<form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
+    <div class="output-container">
+        @foreach (var output in this.ConsoleOutput) {
+            <div class="output-container__element">@output</div>
+        }
+    </div>
+    <div class="input-container">
+        <input type="text" @bind="this.CurrentInput"/>
+        <input type="submit" />
+    </div>
+</form>
+
+<script>
+    function scrollToLatestItem() {
+        const outputContainer = document.getElementsByClassName("output-container")[0];
+
+        if (outputContainer === null) {
+            return;
+        }
+
+        outputContainer.scrollTop = outputContainer.scrollHeight;
+    }
+</script>
+
+@code {
+    private List<string> ConsoleOutput = new() { "Hello world" };
+    private string CurrentInput = "";
+
+    private async Task HandleSubmit() {
+        this.ConsoleOutput.Add($"> {this.CurrentInput}");
+        this.CurrentInput = "";
+        await Task.Yield();
+        await js.InvokeVoidAsync("scrollToLatestItem");
+    }
+}
