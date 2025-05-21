@@ -29,9 +29,18 @@
     private string CurrentInput = "";
 
     private async Task HandleSubmit() {
-        this.ConsoleOutput.Add($"> {this.CurrentInput}");
-        this.CurrentInput = "";
+        await this.ProcessInput();
         await Task.Yield();
         await js.InvokeVoidAsync("scrollToLatestItem");
+    }
+
+    private async Task ProcessInput() {
+        this.ConsoleOutput.Add($"> {this.CurrentInput}");
+
+        if (this.CurrentInput.ToLower() == "rickroll") {
+            await js.InvokeVoidAsync("openInNewTab", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        }
+
+        this.CurrentInput = "";
     }
 }
