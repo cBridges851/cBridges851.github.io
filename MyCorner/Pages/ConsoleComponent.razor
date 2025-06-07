@@ -1,31 +1,51 @@
 @inject IJSRuntime js;
 
-<form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
-    <div class="output-container">
-        @foreach (var output in this.ConsoleOutput) {
-            <div class="output-container__element">@output</div>
-        }
-    </div>
-    <div class="input-container">
-        <input type="text" @bind="this.CurrentInput"/>
-        <input type="submit" />
-    </div>
-</form>
+<div class="console-component">
+    <header>
+        <h1>@this.CurrentLocation</h1>
+    </header>
+
+    <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
+        <div class="console-component__output">
+            <h2>
+                cBridges.github.io, A Personal Website by Christa Bridges
+                v2.0.0
+            </h2>
+            <h3>Outside World</h3>
+            
+
+            <h3>TARDIS Console Room</h3>
+            @foreach (var output in this.ConsoleOutput) {
+                <div class="output-container__element">@output</div>
+            }
+        </div>
+        <div class="console-component__input">
+            <span>&gt;</span>
+            <input name="command-input" type="text" title="Command Input" placeholder="Enter command..." @bind="this.CurrentInput"/>
+            <input type="submit" value="GO"/>
+        </div>
+    </form>
+</div>
 
 <script>
     function scrollToLatestItem() {
-        const outputContainer = document.getElementsByClassName("output-container")[0];
+        console.log("scrolling to latest item");
+        const outputContainer = document.getElementsByClassName("console-component__output")[0];
+        console.log(outputContainer);
 
         if (outputContainer === null) {
             return;
         }
 
+        console.log(`scrollTop before: ${outputContainer. scrollTop}`);
         outputContainer.scrollTop = outputContainer.scrollHeight;
+        console.log(`scrollTop after: ${outputContainer. scrollTop}`);
     }
 </script>
 
 @code {
-    private List<string> ConsoleOutput = new() { "Hello world" };
+    private string CurrentLocation = "TARDIS Console Room";
+    private List<string> ConsoleOutput = new() { };
     private string CurrentInput = "";
 
     private async Task HandleSubmit() {
