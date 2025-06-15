@@ -42,17 +42,13 @@
 
 <script>
     function scrollToLatestItem() {
-        console.log("scrolling to latest item");
         const outputContainer = document.getElementsByClassName("console-component__output")[0];
-        console.log(outputContainer);
 
         if (outputContainer === null) {
             return;
         }
 
-        console.log(`scrollTop before: ${outputContainer. scrollTop}`);
         outputContainer.scrollTop = outputContainer.scrollHeight;
-        console.log(`scrollTop after: ${outputContainer. scrollTop}`);
     }
 </script>
 
