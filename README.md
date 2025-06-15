@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/cbridges851/cbridges851.github.io/badge)](https://www.codefactor.io/repository/github/cbridges851/cbridges851.github.io)
+
 # cBridges.github.io
 My text-based game-style personal website! This will be built using Blazor WebAssembly as an opportunity explore it, and showcase:
 - What I'm about
