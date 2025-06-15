@@ -1,0 +1,41 @@
+﻿.console-component {
+    width: 650px;
+    max-height: 100vh;
+}
+
+header {
+    background-color: #FFFFFF;
+    color: #000000;
+    padding: 10px;
+}
+
+.console-component__input {
+    display: flex;
+    background-color: #3E3E3E;
+    height: 3vh;
+}
+
+.console-component__input input[type=text] {
+    background-color: transparent;
+    border: none;
+    width: 85%;
+}
+
+.console-component__output {
+    overflow-y: auto;
+    height: 85vh;
+}
+
+.output-container__element {
+    margin-bottom: 0.5rem;
+}
+
+span {
+    margin: auto;
+}
+
+@media (max-width: 650px) {
+    .console-component {
+        width: 100%;
+    }
+}
