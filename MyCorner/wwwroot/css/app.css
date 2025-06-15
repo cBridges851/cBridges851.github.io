@@ -61,7 +61,7 @@ input[type=submit] {
     display: block;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    margin: 20vh auto 1rem;
 }
 
     .loading-progress circle {
