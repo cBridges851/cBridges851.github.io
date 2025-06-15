@@ -1,20 +1,48 @@
 @inject IJSRuntime js;
 
-<form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
-    <div class="output-container">
-        @foreach (var output in this.ConsoleOutput) {
-            <div class="output-container__element">@output</div>
-        }
-    </div>
-    <div class="input-container">
-        <input type="text" @bind="this.CurrentInput"/>
-        <input type="submit" />
-    </div>
-</form>
+<div class="console-component">
+    <header>
+        <h1>@this.CurrentLocation</h1>
+    </header>
+
+    <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
+        <div class="console-component__output">
+            <h2>
+                cBridges.github.io, A Personal Website by Christa Bridges
+                v2.0.0
+            </h2>
+            <h3>TARDIS Console Room</h3>
+            <p>
+                You're inside a TARDIS (yes, from Doctor Who) which is bigger on the inside. Or smaller on the outside. Whatever floats your boat. 
+                The walls are covered with glowing blue, green, and red hexagons that are all connected like a honeycomb.<br><br>
+                
+                At the centre is a hexagonal console cluttered with buttons, levers, and joysticks. 
+                Whether they do anything is... unclear. But there is a CD player that seems to be working because it's playing Westlife.<br><br>
+
+                A young brown-haired woman wearing a red neckwarmer/snood/thingy, 
+                black long-sleeved shirt, and black cargo trousers peeks from behind the console.<br><br>
+
+                "Oh hey! I'm Christa Bridges. I'm a software developer who primarily works in backend with .NET, but I sometimes dabble in other stuff. Like, I've recently dabbled in frontend with AngularJS and React, and Cloud."<br><br>
+
+                She's interuptted by some very noisy drilling and sawing.<br><br>
+
+                "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/">LinkedIn</a>!"
+            </p>
+            @foreach (var output in this.ConsoleOutput) {
+                <div class="output-container__element">@output</div>
+            }
+        </div>
+        <div class="console-component__input">
+            <span>&gt;</span>
+            <input name="command-input" type="text" title="Command Input" placeholder="Enter command..." @bind="this.CurrentInput"/>
+            <input type="submit" value="GO"/>
+        </div>
+    </form>
+</div>
 
 <script>
     function scrollToLatestItem() {
-        const outputContainer = document.getElementsByClassName("output-container")[0];
+        const outputContainer = document.getElementsByClassName("console-component__output")[0];
 
         if (outputContainer === null) {
             return;
@@ -25,7 +53,8 @@
 </script>
 
 @code {
-    private List<string> ConsoleOutput = new() { "Hello world" };
+    private string CurrentLocation = "TARDIS Console Room";
+    private List<string> ConsoleOutput = new() { };
     private string CurrentInput = "";
 
     private async Task HandleSubmit() {
