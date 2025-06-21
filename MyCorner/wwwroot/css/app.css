@@ -26,8 +26,8 @@ a {
 }
 
 input {
-    font-family: Consolas;
-    font-size: 16px;
+    font-family: "Source Code Pro", monospace;
+    font-size: 1rem;
     color: #FFFFFF;
 }
 
