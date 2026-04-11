@@ -7,7 +7,7 @@ namespace MyCorner.Locations {
             ["personal website"] = """
             The site you're looking at now! A text-based game style personal website to showcase my skills and interests.<br>
             Tech: Blazor WebAssembly, C#/.NET, HTML, CSS, JavaScript<br>
-            GitHub Repo: <a href="https://github.com/cBridges851/cBridges851.github.io/">https://github.com/cBridges851/cBridges851.github.io/</a><br>
+            GitHub Repo: <a href="https://github.com/cBridges851/cBridges851.github.io/" target="_blank">https://github.com/cBridges851/cBridges851.github.io/</a><br>
             """
         };
 
@@ -32,7 +32,7 @@ namespace MyCorner.Locations {
                     {string.Join("<br>\n", projects.Keys.Select(p => $"- {p}"))}
                     <br><br>
                     Use 'view [project-name]' to learn more about each project.
-                    GitHub with all projects: <a href="https://github.com/cBridges851/">https://github.com/cBridges851/</a>
+                    GitHub with all projects: <a href="https://github.com/cBridges851/" target="_blank">https://github.com/cBridges851/</a>
                     """;
         }
 
