@@ -24,6 +24,8 @@ namespace MyCorner.Locations {
                 Available exits:<br>
                 - console (east): Back to the TARDIS Console Room
                 """;
+
+            this.InitialiseCommands();
         }
 
         private string ListKeyProjects() {

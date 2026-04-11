@@ -9,6 +9,9 @@ namespace MyCorner.Locations {
         protected Location(IJSRuntime js) {
             this.js = js;
             commands = new();
+        }
+
+        protected void InitialiseCommands() {
             RegisterBaseCommands();
             RegisterLocationCommands();
         }

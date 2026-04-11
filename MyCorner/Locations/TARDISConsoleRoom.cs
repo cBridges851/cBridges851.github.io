@@ -11,6 +11,7 @@ namespace MyCorner.Locations {
             Available exits:<br>
             - workshop (west): Through a door marked "Projects"
             """;
+            this.InitialiseCommands();
         }
 
         protected override void RegisterLocationCommands() {
