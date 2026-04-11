@@ -4,35 +4,42 @@ using MyCorner.Commands;
 namespace MyCorner.Locations {
     public class Workshop : Location {
         private readonly Dictionary<string, string> projects = new() {
-            ["personal website"] = "A text-based game style personal website built with Blazor WebAssembly.",
-            ["project mercury"] = "A desktop application that helps developers manage their tasks.",
-            ["devhelper bot"] = "A Discord bot that provides programming help and resources."
+            ["personal website"] = """
+            The site you're looking at now! A text-based game style personal website to showcase my skills and interests.<br>
+            Tech: Blazor WebAssembly, C#/.NET, HTML, CSS, JavaScript<br>
+            GitHub Repo: <a href="https://github.com/cBridges851/cBridges851.github.io/">https://github.com/cBridges851/cBridges851.github.io/</a><br>
+            """
         };
 
         public Workshop(IJSRuntime js) : base(js) {
             Name = "Project Workshop";
-            Description = """
-                You enter a cozy workshop filled with various projects in different stages of development.
-                Screens displaying code and project demos line the walls. There's a comfortable workspace
-                in the center with multiple monitors showing different programming languages and frameworks.<br><br>
+            Description = $"""
+                You enter a cosy workshop filled with various projects in different stages of development.
+                Screens displaying code and project demos line the walls.<br><br>
 
-                Various project prototypes and demos are neatly organized on virtual shelves around the room.
-                Each project has a small interactive display showing its key features.<br><br>
+                {this.ListKeyProjects()}
 
-                Available exits:
-                - console: Back to the TARDIS Console Room
+                <br><br>
+
+                Available exits:<br>
+                - console (east): Back to the TARDIS Console Room
                 """;
+        }
+
+        private string ListKeyProjects() {
+            return $"""
+                    Key projects:<br>
+                    {string.Join("<br>\n", projects.Keys.Select(p => $"- {p}"))}
+                    <br><br>
+                    Use 'view [project-name]' to learn more about each project.
+                    GitHub with all projects: <a href="https://github.com/cBridges851/">https://github.com/cBridges851/</a>
+                    """;
         }
 
         protected override void RegisterLocationCommands() {
             RegisterCommand("list", _ => {
                 var projectList = string.Join("\n", projects.Keys.Select(p => $"- {p}"));
-                return Task.FromResult(CommandResult.Succeeded($"""
-                    Available projects:
-                    {projectList}
-                    
-                    Use 'view [project-name]' to learn more about each project.
-                    """));
+                return Task.FromResult(CommandResult.Succeeded(this.ListKeyProjects()));
             });
 
             RegisterCommand("view", args => {
@@ -58,7 +65,7 @@ namespace MyCorner.Locations {
                         new TARDISConsoleRoom(js)
                     ));
                 }
-                return Task.FromResult(CommandResult.Failed("You can't go there from here. Try 'help' to see where you can go."));
+                return Task.FromResult(CommandResult.Failed("You can't go there from here. Try 'help' to see where you can go.")); 
             });
         }
 
