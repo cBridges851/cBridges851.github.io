@@ -42,7 +42,11 @@ namespace MyCorner.Locations {
         public virtual async Task<CommandResult> ExecuteAction(string verb, string[] args) {
             verb = verb.ToLower();
             if (commands.TryGetValue(verb, out var handler)) {
-                return await handler(args);
+                try {
+                    return await handler(args);
+                } catch (Exception) {
+                    CommandResult.Failed("An error occurred while executing the command. Please try again.");
+                }
             }
             return CommandResult.Failed("Sorry, I'm not sure what you mean. Try 'help' for available commands.");
         }
