@@ -26,6 +26,12 @@ namespace MyCorner.Locations {
             });
         }
 
+        protected void RegisterCommands(string[] verbs, Func<string[], Task<CommandResult>> handler) {
+            foreach (var verb in verbs) {
+                this.RegisterCommand(verb, handler);
+            }
+        }
+
         protected void RegisterCommand(string verb, Func<string[], Task<CommandResult>> handler) {
             commands[verb.ToLower()] = handler;
         }
@@ -40,9 +46,8 @@ namespace MyCorner.Locations {
 
         protected virtual string GetHelpText() {
             return $"""
-                Available commands in {Name}:
-                - help: Show this help text
-                - rickroll: You know what this does
+                Available commands in {Name}:<br>
+                - help: Show this help text<br>
                 {GetLocationSpecificHelp()}
                 """;
         }

@@ -47,12 +47,12 @@ namespace MyCorner.Locations {
                 return Task.FromResult(CommandResult.Failed("Project not found. Use 'list' to see available projects."));
             });
 
-            RegisterCommand("goto", args => {
+            RegisterCommands(["goto", "go"], args => {
                 if (args.Length == 0) {
                     return Task.FromResult(CommandResult.Failed("Go where? Try 'help' for available destinations."));
                 }
                 
-                if (args[0].ToLower() == "console") {
+                if (args[0].ToLower() == "console" || args[0].ToLower() == "east") {
                     return Task.FromResult(CommandResult.Succeeded(
                         "You walk back to the TARDIS Console Room...",
                         new TARDISConsoleRoom(js)
@@ -64,10 +64,10 @@ namespace MyCorner.Locations {
 
         protected override string GetLocationSpecificHelp() {
             return """
-                Location-specific commands:
-                - list: Shows all projects
-                - view [project-name]: Get details about a specific project
-                - goto console: Return to the TARDIS Console Room
+                Location-specific commands:<br>
+                - list: Shows all projects<br>
+                - view [project-name]: Get details about a specific project<br>
+                - goto console: Return to the TARDIS Console Room<br>
                 """;
         }
     }

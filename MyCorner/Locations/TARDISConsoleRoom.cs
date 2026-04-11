@@ -8,10 +8,8 @@ namespace MyCorner.Locations {
             Description = """
             You are in the TARDIS Console Room. The cluttered console is in front of you, with Christa playing around with a personal development project.<br><br> 
 
-            "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/">LinkedIn</a>!"<br><br>
-
             Available exits:<br>
-            - workshop: Through a door marked "Projects"
+            - workshop (west): Through a door marked "Projects"
             """;
         }
 
@@ -21,12 +19,12 @@ namespace MyCorner.Locations {
                 return CommandResult.Succeeded("Of course! I'd never let you down...");
             });
 
-            RegisterCommand("goto", args => {
+            RegisterCommands(["goto", "go"], args => {
                 if (args.Length == 0) {
                     return Task.FromResult(CommandResult.Failed("Go where? Try 'help' for available destinations."));
                 }
                 
-                if (args[0].ToLower() == "workshop") {
+                if (args[0].ToLower() == "workshop" || args[0].ToLower() == "west") {
                     return Task.FromResult(CommandResult.Succeeded(
                         "You walk through the door marked 'Projects'...",
                         new Workshop(js)
@@ -38,9 +36,8 @@ namespace MyCorner.Locations {
 
         protected override string GetLocationSpecificHelp() {
             return """
-                Location-specific commands:
-                - yo: A special greeting
-                - goto workshop: Visit the project workshop
+                Location-specific commands:<br>
+                - goto workshop: Visit the project workshop<br>
                 """;
         }
     }
