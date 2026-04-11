@@ -1,8 +1,11 @@
+@using System.Net
+@using MyCorner.Locations
+@using MyCorner.Commands
 @inject IJSRuntime js;
 
 <div class="console-component">
     <header>
-        <h1>@this.CurrentLocation</h1>
+        <h1>@this.CurrentLocation.Name</h1>
     </header>
 
     <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
@@ -11,11 +14,10 @@
                 cBridges.github.io, A Personal Website by Christa Bridges
                 v2.0.0
             </h2>
-            <h3>TARDIS Console Room</h3>
-            <p>
+            <p class="console-component__output-item">
                 You're inside a TARDIS (yes, from Doctor Who) which is bigger on the inside. Or smaller on the outside. Whatever floats your boat. 
                 The walls are covered with glowing blue, green, and red hexagons that are all connected like a honeycomb.<br><br>
-                
+
                 At the centre is a hexagonal console cluttered with buttons, levers, and joysticks. 
                 Whether they do anything is... unclear. But there is a CD player that seems to be working because it's playing Westlife.<br><br>
 
@@ -26,10 +28,15 @@
 
                 She's interuptted by some very noisy drilling and sawing.<br><br>
 
-                "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/">LinkedIn</a>!"
+                "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/" target="_blank" rel="noopener noreferrer">LinkedIn</a>!"<br><br>
             </p>
+
             @foreach (var output in this.ConsoleOutput) {
-                <div class="output-container__element">@output</div>
+                if (output.isHeader) {
+                    <h3>@output.output</h3>
+                } else {
+                    <div class="console-component__output-item">@output.output</div>
+                }
             }
         </div>
         <div class="console-component__input">
@@ -43,19 +50,24 @@
 <script>
     function scrollToLatestItem() {
         const outputContainer = document.getElementsByClassName("console-component__output")[0];
-
         if (outputContainer === null) {
             return;
         }
-
         outputContainer.scrollTop = outputContainer.scrollHeight;
     }
 </script>
 
 @code {
-    private string CurrentLocation = "TARDIS Console Room";
-    private List<string> ConsoleOutput = new() { };
+    private record OutputItem(MarkupString output, bool isHeader);
+    private Location CurrentLocation;
+    private List<OutputItem> ConsoleOutput = new() { };
     private string CurrentInput = "";
+
+    protected override void OnInitialized() {
+        this.CurrentLocation = new TARDISConsoleRoom(js);
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Name, true));
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Description, false));
+    }
 
     private async Task HandleSubmit() {
         await this.ProcessInput();
@@ -64,10 +76,20 @@
     }
 
     private async Task ProcessInput() {
-        this.ConsoleOutput.Add($"> {this.CurrentInput}");
+        var cleansedUserInput = WebUtility.HtmlEncode($"> {this.CurrentInput.Trim()}");
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)cleansedUserInput, false));
 
-        if (this.CurrentInput.ToLower() == "rickroll") {
-            await js.InvokeVoidAsync("openInNewTab", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var parts = this.CurrentInput.Trim().Split(' ', 2);
+        var verb = parts[0];
+        var args = parts.Length > 1 ? parts[1].Split(' ', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>();
+
+        var result = await this.CurrentLocation.ExecuteAction(verb, args);
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)result.Message, false));
+
+        if (result.NewLocation != null) {
+            this.CurrentLocation = result.NewLocation;
+            this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Name, true));
+            this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Description, false));
         }
 
         this.CurrentInput = "";

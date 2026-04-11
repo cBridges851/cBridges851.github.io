@@ -26,8 +26,8 @@ header {
     height: 85vh;
 }
 
-.output-container__element {
-    margin-bottom: 0.5rem;
+.console-component__output-item {
+    margin-bottom: 1rem;
 }
 
 span {
