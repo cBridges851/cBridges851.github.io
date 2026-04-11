@@ -1,5 +1,6 @@
 @using System.Net
 @using MyCorner.Locations
+@using MyCorner.Commands
 @inject IJSRuntime js;
 
 <div class="console-component">
@@ -32,22 +33,21 @@
 <script>
     function scrollToLatestItem() {
         const outputContainer = document.getElementsByClassName("console-component__output")[0];
-
         if (outputContainer === null) {
             return;
         }
-
         outputContainer.scrollTop = outputContainer.scrollHeight;
     }
 </script>
 
 @code {
     private record OutputItem(MarkupString output, bool isHeader);
-    private Location CurrentLocation = new TARDISConsoleRoom();
+    private Location CurrentLocation;
     private List<OutputItem> ConsoleOutput = new() { };
     private string CurrentInput = "";
 
     protected override void OnInitialized() {
+        this.CurrentLocation = new TARDISConsoleRoom(js);
         this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Name, true));
         this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Description, false));
     }
@@ -60,10 +60,19 @@
 
     private async Task ProcessInput() {
         var cleansedUserInput = WebUtility.HtmlEncode($"> {this.CurrentInput.Trim()}");
-        this.ConsoleOutput.Add(new OutputItem((MarkupString) cleansedUserInput, false));
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)cleansedUserInput, false));
 
-        if (this.CurrentInput.ToLower() == "rickroll") {
-            await js.InvokeVoidAsync("openInNewTab", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var parts = this.CurrentInput.Trim().Split(' ', 2);
+        var verb = parts[0];
+        var args = parts.Length > 1 ? parts[1].Split(' ') : Array.Empty<string>();
+
+        var result = await this.CurrentLocation.ExecuteAction(verb, args);
+        this.ConsoleOutput.Add(new OutputItem((MarkupString)result.Message, false));
+
+        if (result.NewLocation != null) {
+            this.CurrentLocation = result.NewLocation;
+            this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Name, true));
+            this.ConsoleOutput.Add(new OutputItem((MarkupString)this.CurrentLocation.Description, false));
         }
 
         this.CurrentInput = "";
