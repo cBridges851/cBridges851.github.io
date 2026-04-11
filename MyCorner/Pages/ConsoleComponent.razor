@@ -81,7 +81,7 @@
 
         var parts = this.CurrentInput.Trim().Split(' ', 2);
         var verb = parts[0];
-        var args = parts.Length > 1 ? parts[1].Split(' ') : Array.Empty<string>();
+        var args = parts.Length > 1 ? parts[1].Split(' ', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>();
 
         var result = await this.CurrentLocation.ExecuteAction(verb, args);
         this.ConsoleOutput.Add(new OutputItem((MarkupString)result.Message, false));
