@@ -15,11 +15,6 @@ namespace MyCorner.Locations {
         }
 
         protected override void RegisterLocationCommands() {
-            RegisterCommand("rickroll", async _ => {
-                await js.InvokeVoidAsync("openInNewTab", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-                return CommandResult.Succeeded("Of course! I'd never let you down...");
-            });
-
             RegisterCommands(["goto", "go"], args => {
                 if (args.Length == 0) {
                     return Task.FromResult(CommandResult.Failed("Go where? Try 'help' for available destinations."));
