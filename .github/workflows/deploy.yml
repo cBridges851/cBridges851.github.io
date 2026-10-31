@@ -41,6 +41,15 @@ jobs:
               exit 1
             fi
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Reads lighthouserc.json from the repo root, then runs collect -> assert
+      - name: Run Lighthouse CI
+        run: npx @lhci/cli autorun
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5.0.0  
                   
@@ -52,5 +61,3 @@ jobs:
       - name: Deploy GitHub Pages site
         uses: actions/deploy-pages@v4.0.5
           
-                
-      
