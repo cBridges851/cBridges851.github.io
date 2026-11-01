@@ -43,9 +43,6 @@ jobs:
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli@0.14.x
 
-      # Serves the published static files and runs the audits defined in lighthouserc.json.
-      # The staticDistDir flag overrides the config file; remove it if lighthouserc.json
-      # already defines how the site is served (staticDistDir or startServerCommand).
       - name: Run Lighthouse CI
         run: >
           lhci autorun
