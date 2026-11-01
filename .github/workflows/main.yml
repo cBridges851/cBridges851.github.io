@@ -1,0 +1,60 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [master]
+
+# Cancel in-progress runs for the same PR when new commits are pushed
+concurrency:
+  group: lighthouse-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_PATH: MyCorner/MyCorner.csproj
+  DOTNET_VERSION: 8.0.x
+  PUBLISH_DIR: publish
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish Blazor WASM (Release)
+        run: dotnet publish "$PROJECT_PATH" -c Release -o "$PUBLISH_DIR"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      # Serves the published static files and runs the audits defined in lighthouserc.json.
+      # The staticDistDir flag overrides the config file; remove it if lighthouserc.json
+      # already defines how the site is served (staticDistDir or startServerCommand).
+      - name: Run Lighthouse CI
+        run: >
+          lhci autorun
+          --collect.staticDistDir="./${PUBLISH_DIR}/wwwroot"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          if-no-files-found: ignore
