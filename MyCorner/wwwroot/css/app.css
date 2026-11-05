@@ -1,7 +1,23 @@
+:root {
+    /* Brand */
+    --color-brand: #c000f5;
+    --color-brand-dark: #9a00c4;
+    --color-brand-light: #d966ff;
+
+    /* Neutrals */
+    --color-bg: #000000;
+    --color-text: #ffffff;
+    --color-surface: #3e3e3e;
+    --color-muted: #e0e0e0;
+
+    /* Status */
+    --color-warning-bg: lightyellow;
+}
+
 html, body {
     font-family: "Source Code Pro", monospace;
-    background-color: #000000;
-    color: #FFFFFF;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     margin: 0;
 }
 
@@ -14,31 +30,43 @@ h1:focus {
 }
 
 h2 {
-    color: #B2364C;
+    color: var(--color-brand);
 }
 
 h3 {
-    color: #72BA00;
+    color: var(--color-brand-light);
 }
 
 a {
-    color: #00BFFF;
+    color: var(--color-brand);
 }
 
 input {
     font-family: "Source Code Pro", monospace;
     font-size: 1rem;
-    color: #FFFFFF;
+    color: var(--color-text);
 }
 
 input[type=submit] {
-    background-color: #394669;
+    background-color: var(--color-brand);
     width: 10%;
-    border: 1px groove #2E3853;
+    border: 1px groove var(--color-brand-dark);
+    color: var(--color-text);
+}
+
+input[type=submit]:hover,
+input[type=submit]:focus,
+input[type=submit]:active {
+    background-color: var(--color-brand-dark);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
 }
 
 #blazor-error-ui {
-    background: lightyellow;
+    background: var(--color-warning-bg);
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
     display: none;
@@ -66,14 +94,14 @@ input[type=submit] {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: var(--color-muted);
         stroke-width: 0.6rem;
         transform-origin: 50% 50%;
         transform: rotate(-90deg);
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: var(--color-brand);
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -95,4 +123,9 @@ input[type=submit] {
     height: 50vh;
     display: flex;
     flex-direction: column;
+}
+
+::selection {
+    background: var(--color-brand-dark);
+    color: var(--color-text);
 }
