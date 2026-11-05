@@ -4,14 +4,18 @@
 }
 
 header {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     color: #000000;
     padding: 10px;
 }
 
+header h1 {
+    color: #000000;
+}
+
 .console-component__input {
     display: flex;
-    background-color: #3E3E3E;
+    background-color: var(--color-surface);
     height: 2rem;
 }
 
