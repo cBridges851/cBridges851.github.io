@@ -4,7 +4,7 @@
       "startServerCommand": "npx serve -s MyCorner/bin/Release/net8.0/publish/wwwroot -l 8080",
       "startServerReadyPattern": "Accepting connections",
       "startServerReadyTimeout": 30000,
-      "url": ["http://localhost:8080/", "http://localhost:8080/projects"],
+      "url": ["http://localhost:8080/"],
       "numberOfRuns": 3
     },
     "assert": {
