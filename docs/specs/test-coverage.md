@@ -205,16 +205,19 @@ and point `baseURL` at `http://localhost:8080`.
 
 ### 5.4 Scenario implementation notes
 
-- **Popups (S2, S5):** Playwright captures `window.open`/`target="_blank"` as a `popup` event. Use:
+- **Browser projects:** Chromium only.
+
+- **Popups (S2, S5):** Avoid loading the remote sites. Override `window.open` / `window.openInNewTab` via an init script so the URL passed is captured without navigation:
 
   ```ts
-  const popupPromise = page.waitForEvent('popup');
-  await page.getByTestId('linkedin-link').click();
-  const popup = await popupPromise;
-  await expect(popup).toHaveURL(/linkedin\.com\/in\/christa-bridges/);
+  await page.addInitScript(() => {
+    window.__openedUrls = [];
+    window.open = (url: string) => { window.__openedUrls.push(String(url)); return null; };
+    window.openInNewTab = (url: string) => { window.__openedUrls.push(String(url)); };
+  });
   ```
 
-  For `rickroll`, the command invokes `window.openInNewTab`, which calls `window.open(url, "_blank")`; the same popup capture applies. Assert URL contains `youtube.com/watch?v=dQw4w9WgXcQ` without loading the site.
+  Then assert `window.__openedUrls` contains the expected URL. For the LinkedIn anchor, verify `target="_blank"` and the captured URL; no popup event assertion is required. Assert URLs `linkedin.com/in/christa-bridges` and `youtube.com/watch?v=dQw4w9WgXcQ`.
 
 - **Command submission:** Fill `commandInput`, then click `goButton` (or press Enter). Wait for the echoed `> help` line and the resulting output to appear before asserting, e.g. `await expect(output).toContainText('...')`.
 
@@ -225,7 +228,7 @@ and point `baseURL` at `http://localhost:8080`.
   | Scenario | Key assertions |
   |---|---|
   | S1 | `locationHeader` has text `TARDIS Console Room`; output contains `TARDIS`/`bigger on the inside`; output contains `Available exits` and `workshop (west)`. |
-  | S2 | `window.__openedUrls` contains `linkedin.com/in/christa-bridges`; anchor has `target="_blank"`; a `popup` event fires. |
+  | S2 | `window.__openedUrls` contains `linkedin.com/in/christa-bridges`; anchor has `target="_blank"`. |
   | S3 | Output contains `help: Show this help text` (general) and `Location-specific commands` + `goto workshop` (location-specific). |
   | S4 | Output contains `Sorry, I'm not sure what you mean` and `Try 'help'`. |
   | S5 | `window.__openedUrls` contains `youtube.com/watch?v=dQw4w9WgXcQ`; output contains `Of course! I'd never let you down`. |
@@ -334,18 +337,9 @@ test.describe('Console', () => {
 });
 ```
 
-### 5.6 CI integration (optional, recommended)
+### 5.6 CI integration (out of scope)
 
-Add a workflow `.github/workflows/e2e.yml` (or extend `deploy.yml`) that:
-
-1. Checks out the repo.
-2. Sets up .NET 8 and Node 20.
-3. Runs `dotnet publish MyCorner -c Release`.
-4. Installs Playwright browsers (`npx playwright install --with-deps`).
-5. Serves the published `wwwroot` (or runs `dotnet run`) and executes `npx playwright test`.
-6. Uploads the Playwright HTML report as an artifact on failure.
-
-Keep Lighthouse CI unchanged.
+CI execution is out of scope for this spec; the suite is intended to run locally against the dev server. (A workflow can be added later without changing the test code.)
 
 ### 5.7 Additional testing considerations (not covered above)
 
@@ -363,11 +357,11 @@ Keep Lighthouse CI unchanged.
 | `tests/e2e/package.json` | New. Playwright Test dependency and scripts. |
 | `tests/e2e/playwright.config.ts` | New. `webServer`, `baseURL`, browser projects. |
 | `tests/e2e/specs/console.spec.ts` | New. Scenarios S1-S11. |
-| `MyCorner/Pages/ConsoleComponent.razor` | Optional: add `data-testid` attributes for stable selectors. |
+| `MyCorner/Pages/ConsoleComponent.razor` | Required: add `data-testid` attributes for stable selectors. |
 | `.github/workflows/e2e.yml` | Optional: CI execution. |
 | `AGENTS.md` | Update Definition of Done to mention E2E tests. |
 
-No changes to command logic, locations, or styling are required.
+No changes to command logic, locations, or styling are required; the only markup change is the addition of `data-testid` attributes.
 
 ## 7. Risks / open questions
 
