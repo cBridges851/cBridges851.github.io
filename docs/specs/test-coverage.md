@@ -139,8 +139,7 @@ Then the output asks what the user wants to view
 
 ### 5.1 Test framework and location
 
-- Add a `tests/e2e` directory at the repository root containing a Playwright Test project (TypeScript).
-- Alternatively, if keeping a single .NET solution is preferred, add a `MyCorner.Tests` project using `Microsoft.Playwright` (NUnit/MSTest) and register it in `MyCorner.sln`. Either is acceptable; Playwright Test (TS) is recommended for simpler popup handling and HTML reporting.
+- Add a `tests/e2e` directory at the repository root containing a Playwright Test project (TypeScript). TypeScript Playwright is the chosen stack (simpler popup handling and HTML reporting).
 
 Proposed files (Playwright Test variant):
 
@@ -375,8 +374,8 @@ No changes to command logic, locations, or styling are required; the only markup
 
 ## 8. Acceptance criteria
 
-- [ ] A runnable E2E suite exists under `tests/e2e` (or a .NET test project) covering S1-S11.
-- [ ] `npx playwright test` (or `dotnet test`) passes against a running instance.
+- [ ] A runnable TypeScript Playwright E2E suite exists under `tests/e2e` covering S1-S11.
+- [ ] `npx playwright test` passes against a running instance.
 - [ ] S2 and S5 verify a new browser tab/window opens to the expected URL.
 - [ ] S6/S7 verify the top `h1` location name changes.
 - [ ] S8 verifies both the project blurb and the GitHub link.
