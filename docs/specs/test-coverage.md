@@ -155,15 +155,21 @@ tests/
 
 ### 5.2 Selectors and page object
 
-Use accessible/role-based selectors first; fall back to the existing attributes. A small page object (`ConsolePage`) should wrap:
+Add `data-testid` attributes to the markup (the one markup change proposed) and select via them:
 
-- `locationHeader` = `page.getByRole('heading', { level: 1 })`
-- `commandInput` = `page.getByRole('textbox', { name: 'Command Input' })` (or `page.locator('input[name="command-input"]')`)
-- `goButton` = `page.getByRole('button', { name: 'GO' })` (or `page.locator('input[type="submit"]')`)
-- `output` = `page.locator('.console-component__output')`
-- `linkedInLink` = `page.getByRole('link', { name: 'LinkedIn' })`
+- `header` element: `data-testid="location-header"`
+- output container: `data-testid="console-output"`
+- command input: `data-testid="command-input"`
+- submit button: `data-testid="submit-button"`
+- LinkedIn anchor: `data-testid="linkedin-link"`
 
-Optional but recommended: add `data-testid` attributes to `header`, the output container, the input, and the submit button to decouple tests from styling/text. If added, update the selectors above accordingly. This is the only markup change proposed.
+A small page object (`ConsolePage`) should wrap:
+
+- `locationHeader` = `page.getByTestId('location-header')`
+- `commandInput` = `page.getByTestId('command-input')`
+- `goButton` = `page.getByTestId('submit-button')`
+- `output` = `page.getByTestId('console-output')`
+- `linkedInLink` = `page.getByTestId('linkedin-link')`
 
 ### 5.3 Test harness / running the app
 
@@ -203,7 +209,7 @@ and point `baseURL` at `http://localhost:8080`.
 
   ```ts
   const popupPromise = page.waitForEvent('popup');
-  await page.getByRole('link', { name: 'LinkedIn' }).click();
+  await page.getByTestId('linkedin-link').click();
   const popup = await popupPromise;
   await expect(popup).toHaveURL(/linkedin\.com\/in\/christa-bridges/);
   ```
@@ -219,7 +225,7 @@ and point `baseURL` at `http://localhost:8080`.
   | Scenario | Key assertions |
   |---|---|
   | S1 | `locationHeader` has text `TARDIS Console Room`; output contains `TARDIS`/`bigger on the inside`; output contains `Available exits` and `workshop (west)`. |
-  | S2 | `window.__openedUrls` contains `linkedin.com/in/christa-bridges`; a `popup` event fires (or anchor has `target="_blank"`). |
+  | S2 | `window.__openedUrls` contains `linkedin.com/in/christa-bridges`; anchor has `target="_blank"`; a `popup` event fires. |
   | S3 | Output contains `help: Show this help text` (general) and `Location-specific commands` + `goto workshop` (location-specific). |
   | S4 | Output contains `Sorry, I'm not sure what you mean` and `Try 'help'`. |
   | S5 | `window.__openedUrls` contains `youtube.com/watch?v=dQw4w9WgXcQ`; output contains `Of course! I'd never let you down`. |
@@ -238,82 +244,90 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Console', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__openedUrls = [];
+      window.open = (url: string) => { window.__openedUrls.push(String(url)); return null; };
+      window.openInNewTab = (url: string) => { window.__openedUrls.push(String(url)); };
+    });
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('TARDIS Console Room');
+    await expect(page.getByTestId('location-header')).toBeVisible({ timeout: 60000 });
+    await expect(page.getByTestId('location-header')).toHaveText('TARDIS Console Room');
   });
 
   test('S1 initial page load', async ({ page }) => {
-    const header = page.getByRole('heading', { level: 1 });
+    const header = page.getByTestId('location-header');
     await expect(header).toHaveText('TARDIS Console Room');
-    await expect(page.locator('.console-component__output')).toContainText('TARDIS');
-    await expect(page.locator('.console-component__output')).toContainText('Available exits');
-    await expect(page.locator('.console-component__output')).toContainText('workshop (west)');
+    await expect(page.getByTestId('console-output')).toContainText('TARDIS');
+    await expect(page.getByTestId('console-output')).toContainText('Available exits');
+    await expect(page.getByTestId('console-output')).toContainText('workshop (west)');
   });
 
   test('S2 LinkedIn opens new window', async ({ page }) => {
+    await expect(page.getByTestId('linkedin-link')).toHaveAttribute('target', '_blank');
     const popupPromise = page.waitForEvent('popup');
-    await page.getByRole('link', { name: 'LinkedIn' }).click();
+    await page.getByTestId('linkedin-link').click();
     const popup = await popupPromise;
-    await expect(popup).toHaveURL(/linkedin\.com\/in\/christa-bridges/);
+    await expect.poll(() => page.evaluate(() => (window as any).__openedUrls ?? [])).toContain('https://www.linkedin.com/in/christa-bridges/');
+    await popup.close();
   });
 
   test('S3 help command', async ({ page }) => {
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('help');
-    await page.locator('input[type="submit"]').click();
-    const output = page.locator('.console-component__output');
+    await page.getByTestId('submit-button').click();
+    const output = page.getByTestId('console-output');
     await expect(output).toContainText('help: Show this help text');
     await expect(output).toContainText('Location-specific commands');
     await expect(output).toContainText('goto workshop');
   });
 
   test('S4 unknown command', async ({ page }) => {
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('asdfghjkl');
-    await page.locator('input[type="submit"]').click();
-    const output = page.locator('.console-component__output');
+    await page.getByTestId('submit-button').click();
+    const output = page.getByTestId('console-output');
     await expect(output).toContainText("Sorry, I'm not sure what you mean");
     await expect(output).toContainText("Try 'help'");
   });
 
   test('S5 rickroll opens YouTube', async ({ page }) => {
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('rickroll');
     const popupPromise = page.waitForEvent('popup');
-    await page.locator('input[type="submit"]').click();
+    await page.getByTestId('submit-button').click();
     const popup = await popupPromise;
     await expect(popup).toHaveURL(/youtube\.com\/watch\?v=dQw4w9WgXcQ/);
   });
 
   test('S6 go west -> workshop', async ({ page }) => {
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('go west');
-    await page.locator('input[type="submit"]').click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Project Workshop');
-    const output = page.locator('.console-component__output');
+    await page.getByTestId('submit-button').click();
+    await expect(page.getByTestId('location-header')).toHaveText('Project Workshop');
+    const output = page.getByTestId('console-output');
     await expect(output).toContainText('Key projects');
     await expect(output).toContainText('personal website');
   });
 
   test('S7 go east -> console room', async ({ page }) => {
     // arrange: reach workshop
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('go west');
-    await page.locator('input[type="submit"]').click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Project Workshop');
+    await page.getByTestId('submit-button').click();
+    await expect(page.getByTestId('location-header')).toHaveText('Project Workshop');
     // act
-    await page.locator('input[name="command-input"]').fill('go east');
-    await page.locator('input[type="submit"]').click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('TARDIS Console Room');
+    await page.getByTestId('command-input').fill('go east');
+    await page.getByTestId('submit-button').click();
+    await expect(page.getByTestId('location-header')).toHaveText('TARDIS Console Room');
   });
 
   test('S8 view personal website', async ({ page }) => {
-    const input = page.locator('input[name="command-input"]');
+    const input = page.getByTestId('command-input');
     await input.fill('go west');
-    await page.locator('input[type="submit"]').click();
-    await page.locator('input[name="command-input"]').fill('view personal website');
-    await page.locator('input[type="submit"]').click();
-    const output = page.locator('.console-component__output');
+    await page.getByTestId('submit-button').click();
+    await page.getByTestId('command-input').fill('view personal website');
+    await page.getByTestId('submit-button').click();
+    const output = page.getByTestId('console-output');
     await expect(output).toContainText('The site you're looking at now');
     await expect(output.locator('a[href="https://github.com/cBridges851/cBridges851.github.io/"]')).toBeVisible();
   });
@@ -335,10 +349,12 @@ Keep Lighthouse CI unchanged.
 
 ### 5.7 Additional testing considerations (not covered above)
 
-- **First-load latency.** Blazor WASM downloads the runtime on first navigation. Rather than fixed 60–120s sleeps, wait for a concrete render signal, e.g. `await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 60000 })`, and set `webServer.timeout` to cover server startup. Consider `workers: 1` to avoid overloading the dev server.
+- **First-load latency.** Blazor WASM downloads the runtime on first navigation. Rather than fixed 60–120s sleeps, wait for a concrete render signal, e.g. `await expect(page.getByTestId('location-header')).toBeVisible({ timeout: 60000 })`, and set `webServer.timeout` to cover server startup. Consider `workers: 1` to avoid overloading the dev server.
 - **Blazor render timing.** Output is appended after `await ExecuteAction`. Rely on Playwright auto-waiting (`expect(...).toContainText(...)`) rather than fixed sleeps; never assert immediately after clicking GO.
 - **Parallelism and isolation.** Playwright creates a fresh context per test by default, which gives isolation, but parallel workers hitting a single dev server can contend. Set `fullyParallel: false` (or `workers: 1`) for the E2E project.
 - **Dev server only.** Tests run against `dotnet run --project MyCorner` (http://localhost:5219), avoiding published service-worker caching.
+- **Console error checking.** Each test should assert that no uncaught browser console errors occur (via `page.on('console')` / `page.on('pageerror')`), failing the test if any error-level message is emitted.
+- **Echoed command.** Tests should also assert the typed command is echoed in the output (e.g. `> help`) before asserting the result.
 
 ## 6. Files to change / add
 
