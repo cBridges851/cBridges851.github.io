@@ -306,6 +306,20 @@ Add a workflow `.github/workflows/e2e.yml` (or extend `deploy.yml`) that:
 
 Keep Lighthouse CI unchanged.
 
+### 5.7 Additional testing considerations (not covered above)
+
+- **S8 omits "press GO" in the Gherkin, but the app requires submission.** The component only processes input on form submit. Tests for S8 must still fill the input and click `GO` (or press Enter); the spec's example already does this. Document this so an implementer does not wait for auto-submission.
+- **Service worker caching (published host).** The published variant precaches assets and may serve a stale `index.html`/JS. Prefer the dev server (`dotnet run`) for E2E, or disable the service worker / clear storage in the Playwright context (`serviceWorkers: 'block'`) when testing published output.
+- **External network calls for popups.** S2 and S5 open real LinkedIn/YouTube tabs. To keep tests hermetic and fast, intercept popup requests with `page.route`/`context.route` or assert the URL passed to `window.open` without loading the remote site. If loading real sites, expect network-dependent flakiness.
+- **Popup blocker / user-gesture timing.** `rickroll` invokes `window.open` via JS interop after an `await` in the submit handler, which can consume the user-gesture activation in some browsers. The app currently works, but headless Chromium should be verified; if blocked, assert the interop call instead of relying on a real popup.
+- **First-load latency.** Blazor WASM downloads the runtime on first navigation. Set per-test timeouts (e.g. 60–120s) and `webServer.timeout` accordingly; consider `workers: 1` to avoid overloading the dev server.
+- **`help` does not document `rickroll`.** `GetHelpText()` lists `help` and location-specific commands but not the `rickroll` easter egg. If "general commands" is expected to include `rickroll`, either update `GetHelpText()` or relax the S3 assertion to the `help` line only. Flag for product decision.
+- **Exact-text assertions.** `header h1` text should match `TARDIS Console Room` / `Project Workshop` exactly, but use `toContainText` (not `toHaveText`) if trailing whitespace or child nodes are a concern.
+- **Blazor render timing.** Output is appended after `await ExecuteAction`. Rely on Playwright auto-waiting (`expect(...).toContainText(...)`) rather than fixed sleeps; never assert immediately after clicking GO.
+- **Parallelism and isolation.** Playwright creates a fresh context per test by default, which gives isolation, but parallel workers hitting a single dev server can contend. Set `fullyParallel: false` (or `workers: 1`) for the E2E project.
+- **Known JS defect (non-blocking).** `scrollToLatestItem` checks `=== null` but `getElementsByClassName(...)[0]` is `undefined` when absent, so `.scrollTop` can throw. Does not affect the listed scenarios, but a hardening pass could guard with a truthiness check.
+- **Missing edge-case coverage (optional follow-ups).** Empty input, `go` with no destination, `view` with no project, and the `Location.ExecuteAction` catch-without-return defect are not covered by S1–S8; add separate tests if desired.
+
 ## 6. Files to change / add
 
 | File | Change |
