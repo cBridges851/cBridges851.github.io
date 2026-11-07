@@ -106,9 +106,33 @@ Then the header at the top indicates that they are back in the TARDIS Console Ro
 
 ```gherkin
 Given the user has navigated to the Project Workshop
-When they enter "view personal website"
+When they enter "view personal website" and press "GO"
 Then a blurb about the project is outputted
 Then there is a link to https://github.com/cBridges851/cBridges851.github.io/
+```
+
+### S9 - Empty command
+
+```gherkin
+Given the user has loaded <host name>
+When they press "GO" without entering a command
+Then the output indicates that it does not understand what the user means
+```
+
+### S10 - "go" with no destination
+
+```gherkin
+Given the user has loaded <host name>
+When they enter "go" into the command text box and press "GO"
+Then the output asks where the user wants to go
+```
+
+### S11 - "view" with no project
+
+```gherkin
+Given the user has navigated to the Project Workshop
+When they enter "view" into the command text box and press "GO"
+Then the output asks what the user wants to view
 ```
 
 ## 5. Proposed implementation
@@ -184,7 +208,7 @@ and point `baseURL` at `http://localhost:8080`.
   await expect(popup).toHaveURL(/linkedin\.com\/in\/christa-bridges/);
   ```
 
-  For `rickroll`, the command invokes `window.openInNewTab`, which calls `window.open(url, "_blank")`; the same popup capture applies. Assert URL contains `youtube.com/watch?v=dQw4w9WgXcQ`.
+  For `rickroll`, the command invokes `window.openInNewTab`, which calls `window.open(url, "_blank")`; the same popup capture applies. Assert URL contains `youtube.com/watch?v=dQw4w9WgXcQ` without loading the site.
 
 - **Command submission:** Fill `commandInput`, then click `goButton` (or press Enter). Wait for the echoed `> help` line and the resulting output to appear before asserting, e.g. `await expect(output).toContainText('...')`.
 
@@ -195,13 +219,16 @@ and point `baseURL` at `http://localhost:8080`.
   | Scenario | Key assertions |
   |---|---|
   | S1 | `locationHeader` has text `TARDIS Console Room`; output contains `TARDIS`/`bigger on the inside`; output contains `Available exits` and `workshop (west)`. |
-  | S2 | Popup URL matches `linkedin.com/in/christa-bridges`. |
+  | S2 | `window.__openedUrls` contains `linkedin.com/in/christa-bridges`; a `popup` event fires (or anchor has `target="_blank"`). |
   | S3 | Output contains `help: Show this help text` (general) and `Location-specific commands` + `goto workshop` (location-specific). |
   | S4 | Output contains `Sorry, I'm not sure what you mean` and `Try 'help'`. |
-  | S5 | Popup URL contains `youtube.com/watch?v=dQw4w9WgXcQ`; output contains `Of course! I'd never let you down`. |
+  | S5 | `window.__openedUrls` contains `youtube.com/watch?v=dQw4w9WgXcQ`; output contains `Of course! I'd never let you down`. |
   | S6 | `locationHeader` text `Project Workshop`; output contains `Key projects` and `personal website`. |
   | S7 | `locationHeader` text `TARDIS Console Room`. |
   | S8 | Output contains `The site you're looking at now` and a link with href `https://github.com/cBridges851/cBridges851.github.io/`. |
+  | S9 | Output contains `Sorry, I'm not sure what you mean` (empty input). |
+  | S10 | Output contains `Go where?` (or `Try 'help'`). |
+  | S11 | Output contains `View what?` (or `Try 'list'`). |
 
 ### 5.5 Example test (illustrative)
 
@@ -308,17 +335,10 @@ Keep Lighthouse CI unchanged.
 
 ### 5.7 Additional testing considerations (not covered above)
 
-- **S8 omits "press GO" in the Gherkin, but the app requires submission.** The component only processes input on form submit. Tests for S8 must still fill the input and click `GO` (or press Enter); the spec's example already does this. Document this so an implementer does not wait for auto-submission.
-- **Service worker caching (published host).** The published variant precaches assets and may serve a stale `index.html`/JS. Prefer the dev server (`dotnet run`) for E2E, or disable the service worker / clear storage in the Playwright context (`serviceWorkers: 'block'`) when testing published output.
-- **External network calls for popups.** S2 and S5 open real LinkedIn/YouTube tabs. To keep tests hermetic and fast, intercept popup requests with `page.route`/`context.route` or assert the URL passed to `window.open` without loading the remote site. If loading real sites, expect network-dependent flakiness.
-- **Popup blocker / user-gesture timing.** `rickroll` invokes `window.open` via JS interop after an `await` in the submit handler, which can consume the user-gesture activation in some browsers. The app currently works, but headless Chromium should be verified; if blocked, assert the interop call instead of relying on a real popup.
-- **First-load latency.** Blazor WASM downloads the runtime on first navigation. Set per-test timeouts (e.g. 60–120s) and `webServer.timeout` accordingly; consider `workers: 1` to avoid overloading the dev server.
-- **`help` does not document `rickroll`.** `GetHelpText()` lists `help` and location-specific commands but not the `rickroll` easter egg. If "general commands" is expected to include `rickroll`, either update `GetHelpText()` or relax the S3 assertion to the `help` line only. Flag for product decision.
-- **Exact-text assertions.** `header h1` text should match `TARDIS Console Room` / `Project Workshop` exactly, but use `toContainText` (not `toHaveText`) if trailing whitespace or child nodes are a concern.
+- **First-load latency.** Blazor WASM downloads the runtime on first navigation. Rather than fixed 60–120s sleeps, wait for a concrete render signal, e.g. `await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 60000 })`, and set `webServer.timeout` to cover server startup. Consider `workers: 1` to avoid overloading the dev server.
 - **Blazor render timing.** Output is appended after `await ExecuteAction`. Rely on Playwright auto-waiting (`expect(...).toContainText(...)`) rather than fixed sleeps; never assert immediately after clicking GO.
 - **Parallelism and isolation.** Playwright creates a fresh context per test by default, which gives isolation, but parallel workers hitting a single dev server can contend. Set `fullyParallel: false` (or `workers: 1`) for the E2E project.
-- **Known JS defect (non-blocking).** `scrollToLatestItem` checks `=== null` but `getElementsByClassName(...)[0]` is `undefined` when absent, so `.scrollTop` can throw. Does not affect the listed scenarios, but a hardening pass could guard with a truthiness check.
-- **Missing edge-case coverage (optional follow-ups).** Empty input, `go` with no destination, `view` with no project, and the `Location.ExecuteAction` catch-without-return defect are not covered by S1–S8; add separate tests if desired.
+- **Dev server only.** Tests run against `dotnet run --project MyCorner` (http://localhost:5219), avoiding published service-worker caching.
 
 ## 6. Files to change / add
 
@@ -326,7 +346,7 @@ Keep Lighthouse CI unchanged.
 |---|---|
 | `tests/e2e/package.json` | New. Playwright Test dependency and scripts. |
 | `tests/e2e/playwright.config.ts` | New. `webServer`, `baseURL`, browser projects. |
-| `tests/e2e/specs/console.spec.ts` | New. Scenarios S1-S8. |
+| `tests/e2e/specs/console.spec.ts` | New. Scenarios S1-S11. |
 | `MyCorner/Pages/ConsoleComponent.razor` | Optional: add `data-testid` attributes for stable selectors. |
 | `.github/workflows/e2e.yml` | Optional: CI execution. |
 | `AGENTS.md` | Update Definition of Done to mention E2E tests. |
@@ -335,18 +355,17 @@ No changes to command logic, locations, or styling are required.
 
 ## 7. Risks / open questions
 
-- **Popup handling under `noopener`:** The LinkedIn anchor uses `rel="noopener noreferrer"`; Playwright still receives a `popup` event for `target="_blank"`, but verify in implementation. If not, fall back to asserting the anchor's `href`/`target`.
 - **Blazor render timing:** Command output is appended after `ProcessInput` awaits `ExecuteAction`; tests should wait on `expect(...).toContainText(...)` with Playwright's auto-waiting rather than fixed sleeps.
 - **`rickroll` depends on JS interop:** Requires the published/dev server to load `scripts/openInNewTab.js`; ensure the script tag remains in `index.html`.
 - **State leakage:** Tests must not share state; each test navigates fresh (or uses an isolated browser context). Playwright provides a fresh context per test by default.
-- **Known defect:** `Location.ExecuteAction`'s catch creates a `CommandResult.Failed` but does not return it; none of S1-S8 trigger exceptions, so out of scope. A follow-up spec/test could cover error paths.
+
 - **Selector drift:** If CSS classes or text change, tests may break; `data-testid` attributes mitigate this (section 5.2).
 - **Host placeholder:** `<host name>` in scenarios maps to the running instance URL; tests use `baseURL` from config.
 - **Browser installation in CI:** `npx playwright install --with-deps` adds time; cache the browser binaries.
 
 ## 8. Acceptance criteria
 
-- [ ] A runnable E2E suite exists under `tests/e2e` (or a .NET test project) covering S1-S8.
+- [ ] A runnable E2E suite exists under `tests/e2e` (or a .NET test project) covering S1-S11.
 - [ ] `npx playwright test` (or `dotnet test`) passes against a running instance.
 - [ ] S2 and S5 verify a new browser tab/window opens to the expected URL.
 - [ ] S6/S7 verify the top `h1` location name changes.
