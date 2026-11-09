@@ -402,3 +402,5 @@ FodyWeavers.xsd
 
 # Lighthouse
 /.lighthouseci
+
+package-lock.json

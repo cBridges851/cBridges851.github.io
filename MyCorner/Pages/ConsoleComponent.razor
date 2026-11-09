@@ -4,12 +4,12 @@
 @inject IJSRuntime js;
 
 <div class="console-component">
-    <header>
+    <header data-testid="location-header">
         <h1>@this.CurrentLocation.Name</h1>
     </header>
 
     <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
-        <div class="console-component__output">
+        <div class="console-component__output" data-testid="console-output">
             <h2>
                 cBridges.github.io, A Personal Website by Christa Bridges
                 v2.0.0
@@ -28,7 +28,7 @@
 
                 She's interuptted by some very noisy drilling and sawing.<br><br>
 
-                "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/" target="_blank" rel="noopener noreferrer">LinkedIn</a>!"<br><br>
+                "As you might gather, this place is under construction right now. It's being built in public though, so you can follow along on my <a href="https://www.linkedin.com/in/christa-bridges/" target="_blank" rel="noopener noreferrer" data-testid="linkedin-link">LinkedIn</a>!"<br><br>
             </p>
 
             @foreach (var output in this.ConsoleOutput) {
@@ -41,8 +41,8 @@
         </div>
         <div class="console-component__input">
             <span>&gt;</span>
-            <input name="command-input" type="text" title="Command Input" placeholder="Enter command..." @bind="this.CurrentInput"/>
-            <input type="submit" value="GO"/>
+            <input name="command-input" type="text" title="Command Input" placeholder="Enter command..." @bind="this.CurrentInput" data-testid="command-input"/>
+            <input type="submit" value="GO" data-testid="submit-button"/>
         </div>
     </form>
 </div>
