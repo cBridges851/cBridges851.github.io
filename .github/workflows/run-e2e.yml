@@ -38,12 +38,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: tests/e2e
         
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+        working-directory: tests/e2e
         
       - name: Run Playwright tests
         run: npx playwright test
+        working-directory: tests/e2e
         
       - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
