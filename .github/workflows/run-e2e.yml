@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -28,8 +31,6 @@ jobs:
 
       - name: Publish Blazor WASM (Release)
         run: dotnet publish MyCorner -c Release
-
-      - uses: actions/checkout@v6
       
       - uses: actions/setup-node@v6
         with:
