@@ -4,7 +4,6 @@ on:
   pull_request:
     branches: [master]
 
-# Cancel in-progress runs for the same PR when new commits are pushed
 concurrency:
   group: lighthouse-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -34,6 +33,23 @@ jobs:
 
       - name: Publish Blazor WASM (Release)
         run: dotnet publish MyCorner -c Release
+
+      # Workaround for a .NET 8 SDK bug: the SRI hash recorded for dotnet.native.wasm in
+      # blazor.boot.json is stale and does not match the published file, which causes
+      # Chrome to block the wasm and prevents Blazor from loading. Recompute the hash
+      # from the actual file so the integrity check passes.
+      - name: Fix Blazor WASM integrity hash
+        run: |
+          node -e "
+          const fs=require('fs'),crypto=require('crypto');
+          const bootPath='MyCorner/bin/Release/net8.0/publish/wwwroot/_framework/blazor.boot.json';
+          const boot=JSON.parse(fs.readFileSync(bootPath,'utf8'));
+          const wasmPath='MyCorner/bin/Release/net8.0/publish/wwwroot/_framework/dotnet.native.wasm';
+          const hash=crypto.createHash('sha256').update(fs.readFileSync(wasmPath)).digest('base64');
+          boot.resources.wasmNative['dotnet.native.wasm']='sha256-'+hash;
+          fs.writeFileSync(bootPath,JSON.stringify(boot));
+          console.log('patched wasmNative hash to',boot.resources.wasmNative['dotnet.native.wasm']);
+          "
 
       - name: Setup Node
         uses: actions/setup-node@v4

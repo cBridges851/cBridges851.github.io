@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a59f11d4f00</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a59f11d4f00</value>
+  </resheader>
+  <data name="Workshop.Name" xml:space="preserve">
+    <value>Project Workshop</value>
+  </data>
+  <data name="Workshop.Description" xml:space="preserve">
+    <value>You enter a cosy workshop filled with various projects in different stages of development.
+Screens displaying code and project demos line the walls.&lt;br&gt;&lt;br&gt;
+
+{0}
+
+&lt;br&gt;&lt;br&gt;
+
+Available exits:&lt;br&gt;
+- console (east): Back to the TARDIS Console Room</value>
+  </data>
+  <data name="Workshop.KeyProjectsHeader" xml:space="preserve">
+    <value>Key projects:</value>
+  </data>
+  <data name="Workshop.ViewProjectHint" xml:space="preserve">
+    <value>Use 'view [project-name]' to learn more about each project.</value>
+  </data>
+  <data name="Workshop.GitHubLink" xml:space="preserve">
+    <value>GitHub with all projects: &lt;a href="https://github.com/cBridges851/" target="_blank" rel="noopener noreferrer"&gt;https://github.com/cBridges851/&lt;/a&gt;</value>
+  </data>
+  <data name="Workshop.Project.PersonalWebsite" xml:space="preserve">
+    <value>The site you're looking at now! A text-based game style personal website to showcase my skills and interests.&lt;br&gt;
+Tech: Blazor WebAssembly, C#/.NET, HTML, CSS, JavaScript&lt;br&gt;
+GitHub Repo: &lt;a href="https://github.com/cBridges851/cBridges851.github.io/" target="_blank" rel="noopener noreferrer"&gt;https://github.com/cBridges851/cBridges851.github.io/&lt;/a&gt;&lt;br&gt;</value>
+  </data>
+  <data name="Workshop.ViewWhat" xml:space="preserve">
+    <value>View what? Try 'list' to see available projects.</value>
+  </data>
+  <data name="Workshop.ProjectNotFound" xml:space="preserve">
+    <value>Project not found. Use 'list' to see available projects.</value>
+  </data>
+  <data name="Workshop.GotoConsole" xml:space="preserve">
+    <value>You walk back to the TARDIS Console Room...</value>
+  </data>
+  <data name="Workshop.Help" xml:space="preserve">
+    <value>Location-specific commands:&lt;br&gt;
+- list: Shows all projects&lt;br&gt;
+- view [project-name]: Get details about a specific project&lt;br&gt;
+- goto console: Return to the TARDIS Console Room&lt;br&gt;</value>
+  </data>
+</root>

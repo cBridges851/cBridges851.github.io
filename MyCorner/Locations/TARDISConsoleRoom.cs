@@ -1,40 +1,38 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MyCorner.Commands;
+using MyCorner.Resources;
 
 namespace MyCorner.Locations {
     public class TARDISConsoleRoom : Location {
-        public TARDISConsoleRoom(IJSRuntime js) : base(js) {
-            Name = "TARDIS Console Room";
-            Description = """
-            You are in the TARDIS Console Room. The cluttered console is in front of you, with Christa playing around with a personal development project.<br><br> 
+        protected readonly IStringLocalizer Room;
 
-            Available exits:<br>
-            - workshop (west): Through a door marked "Projects"
-            """;
+        public TARDISConsoleRoom(IJSRuntime js, IStringLocalizerFactory stringLocalizerFactory)
+            : base(js, stringLocalizerFactory) {
+            this.Room = stringLocalizerFactory.Create(typeof(MyCorner.Resources.TardisConsoleRoom));
+            Name = Room["TardisConsoleRoom.Name"].Value;
+            Description = Room["TardisConsoleRoom.Description"].Value;
             this.InitialiseCommands();
         }
 
         protected override void RegisterLocationCommands() {
             RegisterCommands(["goto", "go"], args => {
                 if (args.Length == 0) {
-                    return Task.FromResult(CommandResult.Failed("Go where? Try 'help' for available destinations."));
+                    return Task.FromResult(CommandResult.Failed(Common["General.GoWherePrompt"].Value));
                 }
-                
+
                 if (args[0].ToLower() == "workshop" || args[0].ToLower() == "west") {
                     return Task.FromResult(CommandResult.Succeeded(
-                        "You walk through the door marked 'Projects'...",
-                        new Workshop(js)
+                        Room["TardisConsoleRoom.GotoWorkshop"].Value,
+                        new Workshop(js, StringLocalizerFactory)
                     ));
                 }
-                return Task.FromResult(CommandResult.Failed("You can't go there from here. Try 'help' to see where you can go."));
+                return Task.FromResult(CommandResult.Failed(Common["General.CantGoThere"].Value));
             });
         }
 
         protected override string GetLocationSpecificHelp() {
-            return """
-                Location-specific commands:<br>
-                - goto workshop: Visit the project workshop<br>
-                """;
+            return Room["TardisConsoleRoom.Help"].Value;
         }
     }
 }
