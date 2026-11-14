@@ -34,6 +34,10 @@ jobs:
       - name: Publish Blazor WASM (Release)
         run: dotnet publish MyCorner -c Release
 
+      # Workaround for a .NET 8 SDK bug: the SRI hash recorded for dotnet.native.wasm in
+      # blazor.boot.json is stale and does not match the published file, which causes
+      # Chrome to block the wasm and prevents Blazor from loading. Recompute the hash
+      # from the actual file so the integrity check passes.
       - name: Fix Blazor WASM integrity hash
         run: |
           node -e "
