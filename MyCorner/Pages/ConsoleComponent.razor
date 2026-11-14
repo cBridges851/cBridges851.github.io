@@ -5,7 +5,7 @@
 @inject IStringLocalizerFactory StringLocalizerFactory;
 
 @{
-    var L = StringLocalizerFactory.Create(typeof(MyCorner.Resources.Common));
+    var localiser = StringLocalizerFactory.Create(typeof(MyCorner.Resources.Common));
 }
 
 <div class="console-component">
@@ -16,11 +16,11 @@
     <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
         <div class="console-component__output" data-testid="console-output">
             <h2>
-                @L["Console.HeaderTitle"].Value
-                @L["Console.Version"].Value
+                @localiser["Console.HeaderTitle"].Value
+                @localiser["Console.Version"].Value
             </h2>
             <p class="console-component__output-item">
-                @((MarkupString)L["Console.Intro"].Value)
+                @((MarkupString)localiser["Console.Intro"].Value)
             </p>
 
             @foreach (var output in this.ConsoleOutput) {
@@ -33,8 +33,8 @@
         </div>
         <div class="console-component__input">
             <span>&gt;</span>
-            <input name="command-input" type="text" title="@L["Console.InputTitle"].Value" placeholder="@L["Console.InputPlaceholder"].Value" @bind="this.CurrentInput" data-testid="command-input"/>
-            <input type="submit" value="@L["Console.SubmitButton"].Value" data-testid="submit-button"/>
+            <input name="command-input" type="text" title="@localiser["Console.InputTitle"].Value" placeholder="@localiser["Console.InputPlaceholder"].Value" @bind="this.CurrentInput" data-testid="command-input"/>
+            <input type="submit" value="@localiser["Console.SubmitButton"].Value" data-testid="submit-button"/>
         </div>
     </form>
 </div>
