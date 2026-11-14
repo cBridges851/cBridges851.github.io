@@ -1,83 +1,69 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MyCorner.Commands;
+using MyCorner.Resources;
 
 namespace MyCorner.Locations {
     public class Workshop : Location {
-        private readonly Dictionary<string, string> projects = new() {
-            ["personal website"] = """
-            The site you're looking at now! A text-based game style personal website to showcase my skills and interests.<br>
-            Tech: Blazor WebAssembly, C#/.NET, HTML, CSS, JavaScript<br>
-            GitHub Repo: <a href="https://github.com/cBridges851/cBridges851.github.io/" target="_blank" rel="noopener noreferrer">https://github.com/cBridges851/cBridges851.github.io/</a><br>
-            """
+        private readonly Dictionary<string, string> projectResourceKeys = new() {
+            ["personal website"] = "Workshop.Project.PersonalWebsite"
         };
 
-        public Workshop(IJSRuntime js) : base(js) {
-            Name = "Project Workshop";
-            Description = $"""
-                You enter a cosy workshop filled with various projects in different stages of development.
-                Screens displaying code and project demos line the walls.<br><br>
+        protected readonly IStringLocalizer Room;
 
-                {this.ListKeyProjects()}
-
-                <br><br>
-
-                Available exits:<br>
-                - console (east): Back to the TARDIS Console Room
-                """;
-
+        public Workshop(IJSRuntime js, IStringLocalizerFactory stringLocalizerFactory)
+            : base(js, stringLocalizerFactory) {
+            this.Room = stringLocalizerFactory.Create(typeof(MyCorner.Resources.Workshop));
+            Name = Room["Workshop.Name"].Value;
+            Description = Room["Workshop.Description", ListKeyProjects()].Value;
             this.InitialiseCommands();
         }
 
         private string ListKeyProjects() {
+            var projectList = string.Join("<br>\n", projectResourceKeys.Keys.Select(p => $"- {p}"));
             return $"""
-                    Key projects:<br>
-                    {string.Join("<br>\n", projects.Keys.Select(p => $"- {p}"))}
+                    {Room["Workshop.KeyProjectsHeader"].Value}<br>
+                    {projectList}
                     <br><br>
-                    Use 'view [project-name]' to learn more about each project.
-                    GitHub with all projects: <a href="https://github.com/cBridges851/" target="_blank" rel="noopener noreferrer">https://github.com/cBridges851/</a>
+                    {Room["Workshop.ViewProjectHint"].Value}
+                    {Room["Workshop.GitHubLink"].Value}
                     """;
         }
 
         protected override void RegisterLocationCommands() {
             RegisterCommand("list", _ => {
-                var projectList = string.Join("\n", projects.Keys.Select(p => $"- {p}"));
                 return Task.FromResult(CommandResult.Succeeded(this.ListKeyProjects()));
             });
 
             RegisterCommand("view", args => {
                 if (args.Length == 0) {
-                    return Task.FromResult(CommandResult.Failed("View what? Try 'list' to see available projects."));
+                    return Task.FromResult(CommandResult.Failed(Room["Workshop.ViewWhat"].Value));
                 }
 
                 var project = string.Join(" ", args).ToLower();
-                if (projects.TryGetValue(project, out var description)) {
-                    return Task.FromResult(CommandResult.Succeeded(description));
+                if (projectResourceKeys.TryGetValue(project, out var resourceKey)) {
+                    return Task.FromResult(CommandResult.Succeeded(Room[resourceKey].Value));
                 }
-                return Task.FromResult(CommandResult.Failed("Project not found. Use 'list' to see available projects."));
+                return Task.FromResult(CommandResult.Failed(Room["Workshop.ProjectNotFound"].Value));
             });
 
             RegisterCommands(["goto", "go"], args => {
                 if (args.Length == 0) {
-                    return Task.FromResult(CommandResult.Failed("Go where? Try 'help' for available destinations."));
+                    return Task.FromResult(CommandResult.Failed(Common["General.GoWherePrompt"].Value));
                 }
-                
+
                 if (args[0].ToLower() == "console" || args[0].ToLower() == "east") {
                     return Task.FromResult(CommandResult.Succeeded(
-                        "You walk back to the TARDIS Console Room...",
-                        new TARDISConsoleRoom(js)
+                        Room["Workshop.GotoConsole"].Value,
+                        new TARDISConsoleRoom(js, StringLocalizerFactory)
                     ));
                 }
-                return Task.FromResult(CommandResult.Failed("You can't go there from here. Try 'help' to see where you can go.")); 
+                return Task.FromResult(CommandResult.Failed(Common["General.CantGoThere"].Value));
             });
         }
 
         protected override string GetLocationSpecificHelp() {
-            return """
-                Location-specific commands:<br>
-                - list: Shows all projects<br>
-                - view [project-name]: Get details about a specific project<br>
-                - goto console: Return to the TARDIS Console Room<br>
-                """;
+            return Room["Workshop.Help"].Value;
         }
     }
 }

@@ -1,13 +1,19 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MyCorner.Commands;
+using MyCorner.Resources;
 
 namespace MyCorner.Locations {
     public abstract class Location {
         protected readonly IJSRuntime js;
+        protected readonly IStringLocalizerFactory StringLocalizerFactory;
+        protected readonly IStringLocalizer Common;
         private readonly Dictionary<string, Func<string[], Task<CommandResult>>> commands;
 
-        protected Location(IJSRuntime js) {
+        protected Location(IJSRuntime js, IStringLocalizerFactory stringLocalizerFactory) {
             this.js = js;
+            this.StringLocalizerFactory = stringLocalizerFactory;
+            this.Common = stringLocalizerFactory.Create(typeof(MyCorner.Resources.Common));
             commands = new();
         }
 
@@ -25,7 +31,7 @@ namespace MyCorner.Locations {
             RegisterCommand("help", _ => Task.FromResult(CommandResult.Succeeded(GetHelpText())));
             RegisterCommand("rickroll", async _ => {
                 await js.InvokeVoidAsync("openInNewTab", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-                return CommandResult.Succeeded("Of course! I'd never let you down...");
+                return CommandResult.Succeeded(Common["General.RickrollResponse"].Value);
             });
         }
 
@@ -45,18 +51,14 @@ namespace MyCorner.Locations {
                 try {
                     return await handler(args);
                 } catch (Exception) {
-                    CommandResult.Failed("An error occurred while executing the command. Please try again.");
+                    return CommandResult.Failed(Common["General.CommandError"].Value);
                 }
             }
-            return CommandResult.Failed("Sorry, I'm not sure what you mean. Try 'help' for available commands.");
+            return CommandResult.Failed(Common["General.UnknownCommand"].Value);
         }
 
         protected virtual string GetHelpText() {
-            return $"""
-                Available commands in {Name}:<br>
-                - help: Show this help text<br>
-                {GetLocationSpecificHelp()}
-                """;
+            return Common["General.HelpTemplate", Name, GetLocationSpecificHelp()].Value;
         }
 
         protected abstract string GetLocationSpecificHelp();
